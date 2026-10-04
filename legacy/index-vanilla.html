@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12121f">
+<title>GDU Studio Sprint</title>
+<style>
+  :root{
+    --bg:#12121f; --panel:#1c1c30; --panel2:#2a2a47; --text:#f2f0ea; --muted:#9a9bb5;
+    --gold:#d4af4f; --good:#3ecf8e; --bad:#ff5d6c;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,"Segoe UI",Roboto,sans-serif}
+  body{min-height:100dvh;display:flex;justify-content:center}
+  #app{width:100%;max-width:520px;min-height:100dvh;padding:16px 16px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px}
+  h1,h2,p{margin:0}
+  .logo{font-weight:800;letter-spacing:.5px;color:var(--gold);font-size:.95rem}
+  .hero{font-size:2.1rem;font-weight:800;line-height:1.1}
+  .hero span{color:var(--gold)}
+  .muted{color:var(--muted);font-size:.92rem;line-height:1.45}
+  .card{background:var(--panel);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+  .card ul{margin:0;padding-left:20px;line-height:1.6;font-size:.95rem}
+  label{font-size:.8rem;color:var(--gold);font-weight:700;letter-spacing:.5px}
+  input{font:inherit;font-size:1rem;width:100%;padding:14px;border-radius:12px;border:2px solid var(--panel2);background:var(--bg);color:var(--text)}
+  input:focus{outline:0;border-color:var(--gold)}
+  button{font:inherit;color:var(--text);background:var(--panel2);border:0;border-radius:14px;padding:15px 16px;font-size:1.02rem;cursor:pointer;touch-action:manipulation}
+  button:active:not(:disabled){transform:scale(.97)}
+  button:disabled{opacity:.4}
+  .primary{background:var(--gold);color:#1a1a2e;font-weight:800;font-size:1.1rem}
+  .ghost{background:transparent;border:2px solid var(--panel2);color:var(--muted)}
+  .top{display:flex;align-items:center;gap:10px;font-size:.85rem}
+  .top .team{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .pill{background:var(--panel2);border-radius:99px;padding:5px 11px;font-weight:700;white-space:nowrap}
+  .pill.gold{color:var(--gold)}
+  .turn{background:linear-gradient(90deg,#3a3320,var(--panel));border-left:5px solid var(--gold);border-radius:12px;padding:10px 14px;font-size:.95rem}
+  .turn b{color:var(--gold)}
+  .timer{height:8px;background:var(--panel2);border-radius:9px;overflow:hidden}
+  .timer i{display:block;height:100%;background:var(--gold);width:100%}
+  .timer.low i{background:var(--bad)}
+  .cat{color:var(--gold);font-size:.8rem;font-weight:800;letter-spacing:.8px}
+  .tip{background:#1f2a3d;border-left:5px solid #4dabf7;border-radius:10px;padding:11px 14px;font-size:.95rem;line-height:1.45}
+  .q{font-size:1.3rem;font-weight:700;line-height:1.3}
+  .opts{display:flex;flex-direction:column;gap:10px}
+  .opt{text-align:left;display:flex;gap:12px;align-items:center;background:var(--panel2);line-height:1.3}
+  .opt b{flex:none;width:30px;height:30px;border-radius:8px;background:var(--bg);color:var(--gold);display:grid;place-items:center;font-size:.9rem}
+  .opt.right{background:#164d37;outline:2px solid var(--good)}
+  .opt.wrong{background:#591c25;outline:2px solid var(--bad)}
+  .opt.gone{opacity:.15}
+  .code{background:#0c0c16;border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:4px;font-family:Consolas,"Courier New",monospace}
+  .code button{background:transparent;text-align:left;padding:10px 8px;font-family:inherit;font-size:.9rem;display:flex;gap:10px;border-radius:8px;white-space:pre;overflow-x:auto}
+  .code button i{color:var(--muted);font-style:normal;flex:none;width:18px}
+  .code button.right{background:#164d37;outline:2px solid var(--good)}
+  .code button.wrong{background:#591c25;outline:2px solid var(--bad)}
+  .result-banner{font-size:1.5rem;font-weight:800}
+  .result-banner.good{color:var(--good)} .result-banner.bad{color:var(--bad)}
+  .explain{background:var(--panel2);border-left:5px solid var(--good);border-radius:10px;padding:12px 14px;line-height:1.45;font-size:.97rem}
+  .grow{flex:1}
+  .score-card{background:linear-gradient(160deg,#2b2540,#1c1c30);border:3px solid var(--gold);border-radius:20px;padding:22px 18px;text-align:center;display:flex;flex-direction:column;gap:8px}
+  .score-card .big{font-size:3.2rem;font-weight:900;color:var(--gold);line-height:1}
+  .score-card .title{font-size:1.4rem;font-weight:800}
+  .stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .reel{background:var(--panel2);border-radius:12px;padding:10px 14px;text-align:left}
+  .reel small{display:block;color:var(--gold);font-size:.7rem;font-weight:800;letter-spacing:1px}
+  .reel div{font-weight:800;font-size:1.1rem}
+  .pop{animation:pop .35s ease}
+  @keyframes pop{0%{transform:scale(.9);opacity:0}100%{transform:scale(1);opacity:1}}
+  .shake{animation:shake .35s}
+  @keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ================= CONFIG ================= */
+// Optional: paste a Google Apps Script / webhook URL to collect every team's final score. Leave "" to disable.
+const SUBMIT_URL = "";
+const MCQ_TIME = 25, BUG_TIME = 35, MENTOR_TEXT = "Ask a GDU Mentor (50/50)";
+
+/* ================= CONTENT ================= */
+const CATS = {
+  gdu:    ["GDU LORE",   "🏛️"],
+  code:   ["PROGRAMMER", "💻"],
+  art:    ["ARTIST",     "🎨"],
+  design: ["DESIGNER",   "🧠"],
+  bug:    ["BUG HUNT",   "🐞"]
+};
+const QUESTIONS = [
+  {t:"mcq", cat:"gdu", tip:"GameDevUtopia (GDU) started in 2020 at PICT. Its three founders had never made a game before - they learned by doing.",
+   q:"What did GDU's founders know about game development when they started?", o:["They were all professional developers","They had already published 10 games","They worked at big game studios","Nothing - they learned along the way"], a:3,
+   e:"GDU was built by beginners, just like you. Everyone you'll meet at GDU started at zero."},
+  {t:"mcq", cat:"code", tip:"Every game repeats a loop about 60 times a second: INPUT (read your buttons) -> UPDATE (move things, check rules) -> RENDER (draw the screen).",
+   q:"Your character moves right and appears in its new spot on screen. Which step drew it?", o:["Input","Update","Render","Credits"], a:2,
+   e:"Render = drawing. Input reads you, Update changes the world, Render shows it. That's the heartbeat of every game."},
+  {t:"bug", cat:"bug", tip:"Bug hunting is a game dev superpower. Read each line like plain English and find the one that does the opposite of what we want.",
+   q:"The player should move RIGHT when you press the right key. Tap the buggy line.",
+   code:["speed = 5","if key == RIGHT:","    player.x = player.x - speed"], a:2,
+   e:"Subtracting from x moves the player LEFT. Moving right means player.x + speed."},
+  {t:"mcq", cat:"art", tip:"A game engine is a toolkit that handles graphics, physics and sound, so you don't build everything from scratch. Popular ones: Unity, Godot, Unreal Engine and Defold.",
+   q:"Which of these is a game engine?", o:["Excel","Godot","WhatsApp","Chrome"], a:1,
+   e:"Godot is free and beginner friendly. Unity and Unreal power many famous games, and GDU members use all of them."},
+  {t:"mcq", cat:"gdu", tip:"Glitched is GDU PICT's yearly campus festival - game jams, art jams, esports and a big expo. GameVita is the game jam of GDU's sister chapter at IIIT Kottayam.",
+   q:"Which one is PICT's festival?", o:["GameVita","Glitched","Blender","Unity"], a:1,
+   e:"Glitched has grown from a one-day online event into a multi-day campus festival with speakers from EA and more."},
+  {t:"mcq", cat:"design", tip:"A game jam = make a complete game in 24-72 hours around a surprise theme. The secret is keeping it SMALL.",
+   q:"You have 48 hours and the theme is 'Gravity'. What's the smartest plan?", o:["Build a giant open-world RPG","Start with one simple mechanic and get it working","Wait until the last hour","Copy a big existing game"], a:1,
+   e:"Winners finish small, polished games. One idea done well beats ten ideas half done. GDU members have won jams at IITs this way."},
+  {t:"mcq", cat:"art", tip:"Aseprite draws pixel art, Blender makes 3D models and animation (free!), and DaVinci Resolve edits videos.",
+   q:"You want to draw a tiny pixel-art hero. Which tool fits best?", o:["Blender","DaVinci Resolve","Aseprite","Excel"], a:2,
+   e:"Pixel art is its own art style - those tiny hero sprites in retro games are drawn pixel by pixel."},
+  {t:"bug", cat:"bug", tip:"Score should GO UP each time you collect something. '=' means 'set to', while '+=' means 'add to'.",
+   q:"The score never goes above 1, no matter how many coins you collect. Tap the buggy line.",
+   code:["score = 0","for coin in coins:","    if player.touches(coin):","        score = 1"], a:3,
+   e:"'score = 1' resets the score to 1 each time. It should be score += 1."},
+  {t:"mcq", cat:"design", tip:"Playtesting means watching real people play your unfinished game, in silence. They find problems you can't see because you made it.",
+   q:"Your friend keeps dying at the exact same spot in your level. What does that tell you?", o:["Your friend is bad at games","That spot may be unfair or confusing - fix it","Delete the game","Add even more enemies there"], a:1,
+   e:"If many players fail at the same place, the level is the problem, not the player. Great designers fix that."},
+  {t:"mcq", cat:"code", tip:"A hitbox is the invisible shape the game uses to detect hits. It doesn't have to match the picture exactly - and if it's too big, things hit you from too far away.",
+   q:"A bullet clearly misses your character on screen but still hurts you. What's probably too big?", o:["The soundtrack","The hitbox","The score","The menu"], a:1,
+   e:"What you SEE and what the game CHECKS are different. Fair-feeling hitboxes are a big part of good game feel."},
+  {t:"mcq", cat:"gdu", tip:"Defold is a game engine. GDU has run international game jams with it, and it's used by King - the studio behind Candy Crush.",
+   q:"Candy Crush's studio, King, uses which engine that GDU partners with?", o:["Photoshop","Aseprite","Defold","Blender"], a:2,
+   e:"GDU's Defold game jams brought students from PICT, IIIT Kottayam and IIIT Nagpur together."},
+  {t:"bug", cat:"bug", tip:"When the player is hit, health should go DOWN. Read the three lines like a story.",
+   q:"The player gets STRONGER every time they're hit. Tap the buggy line.",
+   code:["player.health = 100","when hit: player.health = player.health + damage","if player.health <= 0: game_over()"], a:1,
+   e:"Adding damage to health heals the player. It should be health - damage."},
+  {t:"mcq", cat:"design", tip:"'Game juice' = small effects like screen shake, sparkles and sounds that make actions feel awesome, even if the rules don't change.",
+   q:"Picking up a coin plays a 'ding', sparkles and a pop-up number. That's an example of...", o:["A bug","Lag","Game juice","A hitbox"], a:2,
+   e:"Same game, 10x more satisfying. Juice is one of the cheapest ways to make a game feel professional."},
+  {t:"mcq", cat:"art", tip:"To animate a 3D character, artists build a 'rig' - a skeleton of bones inside the model - so it can be posed and moved.",
+   q:"What must a 3D character have before it can walk or wave?", o:["A loot box","A rig","A server","A score"], a:1,
+   e:"No rig, no animation. 3D artists in Blender build rigs for every character."},
+  {t:"bug", cat:"bug", tip:"A jump should only work when the player is standing on the ground (otherwise they could jump forever in mid-air).",
+   q:"The player can only jump while IN THE AIR. Tap the buggy line.",
+   code:["if key == SPACE:","    if player.on_ground == false:","        player.jump()"], a:1,
+   e:"The check is backwards: it allows jumping when NOT on the ground. It should check on_ground == true."}
+];
+const GENRES = ["Platformer","Horror","Puzzle","Racing","Farming sim","Tower defense","Roguelike","Rhythm game","Space shooter","Cooking game"];
+const MECHS  = ["Gravity flips","Time rewind","Only ONE button","Grappling hook","Shrink and grow","Control two characters","Walls are mirrors","Dice decide everything"];
+const TWISTS = ["Set in the college canteen","The hero is a cat","Boss is the Wi-Fi router","Enemy is your professor","Set during exam week","Music controls the world","No text allowed","Set inside a bus to college"];
+
+/* ================= HELPERS ================= */
+const app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const rnd = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+function store(k, v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); if(v===null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
+function buzz(ms){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} }
+
+/* ================= STATE ================= */
+let G = store("gduSprint");          // persisted game: team, members, order, i, score, correct, streak, best, mentor, submitted, done
+let Q = null;                         // transient per-question state
+let timer = null;
+
+/* ================= SCREENS ================= */
+function welcome(){
+  clearInterval(timer);
+  const t = G || {};
+  app.innerHTML = `
+    <div class="logo">GAMEDEVUTOPIA</div>
+    <h1 class="hero">Studio <span>Sprint</span></h1>
+    <p class="muted">No game dev experience needed! Team up (2-3 people, ONE phone) and run a mini game studio. Every round teaches you something first, then you put it to the test.</p>
+    <div class="card">
+      <b>How to play</b>
+      <ul>
+        <li>${QUESTIONS.length} quick rounds. Each starts with a <b>💡 Quick Tip</b> - the answer is hiding in it!</li>
+        <li>Quiz questions plus code <b>Bug Hunts</b> (plain logic, no coding skills needed)</li>
+        <li>The phone shows <b>whose turn</b> it is to tap - everyone else can shout advice</li>
+        <li>Faster answers = more points. Back-to-back correct answers build a <b>streak multiplier</b></li>
+        <li>One <b>Ask a Mentor</b> lifeline (50/50) per game</li>
+      </ul>
+    </div>
+    <div class="card">
+      <label>TEAM NAME</label>
+      <input id="tn" maxlength="20" placeholder="e.g. Pixel Pirates" value="${esc(t.team||"")}">
+      <label>TEAM MEMBERS (2 or 3)</label>
+      <input id="m0" maxlength="16" placeholder="Member 1" value="${esc((t.members||[])[0]||"")}">
+      <input id="m1" maxlength="16" placeholder="Member 2" value="${esc((t.members||[])[1]||"")}">
+      <input id="m2" maxlength="16" placeholder="Member 3 (optional)" value="${esc((t.members||[])[2]||"")}">
+    </div>
+    <button class="primary" id="start">Start the Sprint</button>`;
+  document.getElementById("start").onclick = () => {
+    const team = document.getElementById("tn").value.trim();
+    const members = [0,1,2].map(i=>document.getElementById("m"+i).value.trim()).filter(Boolean);
+    if(!team || members.length<2){ alert("Enter a team name and at least 2 member names."); return; }
+    G = {team, members, order:[0, ...shuffle(QUESTIONS.map((_,i)=>i).slice(1))], i:0, score:0, correct:0, streak:0, best:0, mentor:false, submitted:false, done:false};
+    store("gduSprint", G); question();
+  };
+}
+
+function question(){
+  if(G.i >= QUESTIONS.length) return finish();
+  const q = QUESTIONS[G.order[G.i]];
+  const limit = q.t==="bug" ? BUG_TIME : MCQ_TIME;
+  let opts, ans;
+  if(q.t==="mcq"){ const perm = shuffle([0,1,2,3]); opts = perm.map(i=>q.o[i]); ans = perm.indexOf(q.a); }
+  else { opts = q.code; ans = q.a; }
+  Q = {q, opts, ans, limit, left:limit, phase:"q", gone:[], picked:null, gain:0};
+  renderQ();
+  clearInterval(timer);
+  timer = setInterval(()=>{
+    Q.left = Math.max(0, +(Q.left-.1).toFixed(1));
+    const bar = document.getElementById("bar");
+    if(bar){ bar.firstElementChild.style.width = (Q.left/limit*100)+"%"; bar.classList.toggle("low", Q.left<=5); }
+    if(Q.left<=0) answer(-1);
+  },100);
+}
+
+function renderQ(){
+  const { q, opts, limit } = Q, revealed = Q.phase==="reveal";
+  const member = G.members[G.i % G.members.length];
+  const [catName, emoji] = CATS[q.cat];
+  const mult = 1 + Math.min(G.streak,4)*0.25;
+  let body;
+  if(q.t==="bug"){
+    body = `<div class="code">${opts.map((l,i)=>{
+      let cls = revealed ? (i===Q.ans?"right":(i===Q.picked?"wrong":"")) : "";
+      return `<button class="${cls}" data-i="${i}" ${revealed?"disabled":""}><i>${i+1}</i>${esc(l)}</button>`;
+    }).join("")}</div>`;
+  } else {
+    body = `<div class="opts">${opts.map((o,i)=>{
+      let cls = revealed ? (i===Q.ans?"right":(i===Q.picked?"wrong":"")) : (Q.gone.includes(i)?"gone":"");
+      return `<button class="opt ${cls}" data-i="${i}" ${revealed||Q.gone.includes(i)?"disabled":""}><b>${"ABCD"[i]}</b>${esc(o)}</button>`;
+    }).join("")}</div>`;
+  }
+  const right = revealed && Q.picked===Q.ans;
+  app.innerHTML = `
+    <div class="top"><span class="team">${esc(G.team)}</span>
+      <span class="pill">${G.i+1}/${QUESTIONS.length}</span>
+      <span class="pill gold">${G.score} pts</span>
+      ${G.streak>0?`<span class="pill gold">🔥 x${mult}</span>`:""}</div>
+    <div class="turn">${emoji} <b>${esc(member)}</b>'s turn to tap &middot; <span class="muted">team can advise!</span></div>
+    ${revealed ? "" : `<div class="timer" id="bar"><i></i></div>`}
+    <div class="cat">${catName}</div>
+    <div class="tip">💡 <b>Quick Tip:</b> ${esc(q.tip)}</div>
+    <div class="q">${esc(q.q)}</div>
+    ${body}
+    ${revealed ? `
+      <div class="result-banner ${right?"good pop":"bad shake"}">${right?`Correct! +${Q.gain}`:(Q.picked===-1?"Time's up!":"Not quite!")}</div>
+      <div class="explain"><b>Learn:</b> ${esc(q.e)}</div>
+      <button class="primary" id="next">${G.i+1<QUESTIONS.length?"Next round":"See results"} &rarr;</button>` :
+      (q.t==="mcq" ? `<button class="ghost" id="mentor" ${G.mentor?"disabled":""}>🎓 ${MENTOR_TEXT}${G.mentor?" - used":""}</button>` : "")}`;
+  app.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+  const n = document.getElementById("next"); if(n) n.onclick = ()=>{ G.i++; store("gduSprint", G); question(); };
+  const m = document.getElementById("mentor"); if(m) m.onclick = useMentor;
+}
+
+function useMentor(){
+  if(G.mentor || Q.phase!=="q") return;
+  G.mentor = true;
+  const wrong = Q.opts.map((_,i)=>i).filter(i=>i!==Q.ans);
+  Q.gone = shuffle(wrong).slice(0,2);
+  store("gduSprint", G); renderQ();
+}
+
+function answer(i){
+  if(Q.phase!=="q") return;
+  clearInterval(timer);
+  Q.phase = "reveal"; Q.picked = i;
+  if(i===Q.ans){
+    const mult = 1 + Math.min(G.streak,4)*0.25;
+    Q.gain = Math.round((100 + Math.round(50*Q.left/Q.limit)) * mult);
+    G.score += Q.gain; G.correct++; G.streak++; G.best = Math.max(G.best, G.streak);
+    buzz(60);
+  } else { G.streak = 0; buzz([80,60,80]); }
+  store("gduSprint", G); renderQ();
+}
+
+function finish(){
+  clearInterval(timer);
+  G.done = true; store("gduSprint", G);
+  const c = G.correct, total = QUESTIONS.length;
+  const title = c>=13 ? "Legendary Game Devs 👑" : c>=10 ? "Game Jam Champions 🏆" : c>=7 ? "Rising Indie Devs 🚀" : "Fresh Spawns - the adventure begins 🌱";
+  if(SUBMIT_URL && !G.submitted){
+    G.submitted = true; store("gduSprint", G);
+    try{ fetch(SUBMIT_URL,{method:"POST",mode:"no-cors",body:JSON.stringify({team:G.team,members:G.members,score:G.score,correct:c,best:G.best,at:new Date().toISOString()})}); }catch(e){}
+  }
+  app.innerHTML = `
+    <div class="logo">GAMEDEVUTOPIA &middot; STUDIO SPRINT</div>
+    <div class="score-card pop">
+      <div class="muted">TEAM</div>
+      <div class="title">${esc(G.team)}</div>
+      <div class="muted">${G.members.map(esc).join(" &middot; ")}</div>
+      <div class="big">${G.score}</div>
+      <div class="muted">POINTS</div>
+      <div class="title" style="font-size:1.15rem">${title}</div>
+      <div class="stats"><span class="pill">✅ ${c}/${total} correct</span><span class="pill">🔥 best streak ${G.best}</span></div>
+    </div>
+    <p class="muted" style="text-align:center">📸 Screenshot this card and show it at the GDU desk!</p>
+    <div class="card" id="jam">
+      <b>Bonus: Mini Game Jam</b>
+      <p class="muted">Spin an idea, then pitch it to a GDU member in 30 seconds - title, hook, and what the player does.</p>
+      <div id="reels"></div>
+      <button id="spin">🎰 Spin a game idea</button>
+    </div>
+    <button class="ghost" id="again">Play again</button>`;
+  document.getElementById("spin").onclick = spin;
+  document.getElementById("again").onclick = ()=>{ G = {team:G.team, members:G.members}; store("gduSprint", G); welcome(); };
+}
+
+function spin(){
+  const box = document.getElementById("reels"), btn = document.getElementById("spin");
+  btn.disabled = true;
+  const finals = [rnd(GENRES), rnd(MECHS), rnd(TWISTS)], pools = [GENRES,MECHS,TWISTS], labels = ["GENRE","MECHANIC","TWIST"];
+  let n = 0;
+  const iv = setInterval(()=>{
+    n++;
+    box.innerHTML = [0,1,2].map(i=>{
+      const v = n*90 >= 700+i*500 ? finals[i] : rnd(pools[i]);
+      return `<div class="reel" style="margin-bottom:8px"><small>${labels[i]}</small><div>${esc(v)}</div></div>`;
+    }).join("");
+    if(n*90 >= 1700){ clearInterval(iv); btn.disabled = false; btn.textContent = "🎰 Spin again"; buzz(40); }
+  },90);
+}
+
+/* ================= BOOT ================= */
+if(G && G.order && !G.done) question();   // resume after refresh / sleeping phone
+else if(G && G.done) finish();
+else welcome();
+</script>
+</body>
+</html>

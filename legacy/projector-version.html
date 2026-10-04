@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GDU Showdown</title>
+<style>
+  :root{
+    --bg:#12121f; --panel:#1c1c30; --panel2:#25253f; --text:#f2f0ea; --muted:#9a9bb5;
+    --gold:#d4af4f; --good:#3ecf8e; --bad:#ff5d6c; --accent:#7c6cff;
+    --t0:#ff6b6b; --t1:#4dabf7; --t2:#51cf66; --t3:#fcc419; --t4:#cc5de8; --t5:#ff922b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,sans-serif}
+  body{min-height:100vh;display:flex;flex-direction:column}
+  header{display:flex;align-items:center;gap:16px;padding:12px 24px;border-bottom:3px solid var(--gold);flex-wrap:wrap}
+  header h1{margin:0;font-size:1.5rem;letter-spacing:.5px}
+  header h1 span{color:var(--gold)}
+  nav{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+  button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:10px 18px;background:var(--panel2);color:var(--text);transition:transform .08s,background .15s}
+  button:hover:not(:disabled){background:#33335a}
+  button:active:not(:disabled){transform:scale(.97)}
+  button:disabled{opacity:.45;cursor:default}
+  button.primary{background:var(--gold);color:#1a1a2e;font-weight:700}
+  button.primary:hover:not(:disabled){background:#e6c25e}
+  nav button.on{outline:2px solid var(--gold)}
+  main{flex:1;padding:20px 24px;display:flex;flex-direction:column;gap:18px;max-width:1200px;width:100%;margin:0 auto}
+  .scoreboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .team{background:var(--panel);border-radius:14px;padding:12px 14px;border-top:6px solid var(--c);text-align:left;position:relative}
+  .team .k{position:absolute;top:8px;right:10px;font-size:.75rem;color:var(--muted)}
+  .team .n{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:26px}
+  .team .s{font-size:2rem;font-weight:800;color:var(--c)}
+  .team.buzzed{box-shadow:0 0 0 3px var(--c),0 0 24px var(--c);transform:scale(1.04)}
+  .team.locked{opacity:.4}
+  button.team:hover:not(:disabled){background:var(--panel2)}
+  .stage{background:var(--panel);border-radius:18px;padding:28px;min-height:360px;display:flex;flex-direction:column;gap:18px}
+  .chip{display:inline-block;background:var(--panel2);color:var(--gold);padding:4px 12px;border-radius:99px;font-size:.8rem;font-weight:700;letter-spacing:.5px}
+  .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .spacer{flex:1}
+  .q{font-size:clamp(1.3rem,2.8vw,2.1rem);font-weight:700;line-height:1.3}
+  .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+  .opt{text-align:left;padding:16px 18px;font-size:1.15rem;background:var(--panel2);display:flex;gap:12px;align-items:center}
+  .opt b{background:var(--bg);color:var(--gold);width:32px;height:32px;border-radius:8px;display:grid;place-items:center;flex:none}
+  .opt.right{background:#164d37;outline:2px solid var(--good)}
+  .opt.wrong{background:#591c25;outline:2px solid var(--bad)}
+  .timer{height:10px;background:var(--panel2);border-radius:9px;overflow:hidden}
+  .timer i{display:block;height:100%;width:100%;background:var(--gold);transition:width .1s linear}
+  .timer.low i{background:var(--bad)}
+  .explain{background:var(--panel2);border-left:5px solid var(--good);border-radius:10px;padding:14px 16px;font-size:1.05rem}
+  .hint{color:var(--muted);font-size:.95rem}
+  .banner{font-size:1.2rem;font-weight:700}
+  .reels{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .reel{background:var(--panel2);border-radius:14px;padding:18px;text-align:center;min-height:130px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+  .reel small{color:var(--gold);letter-spacing:1px;font-weight:700}
+  .reel div{font-size:1.5rem;font-weight:800}
+  .reel.spin div{opacity:.6}
+  .award{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+  .award .a{background:var(--panel2);border-radius:12px;padding:10px 12px;border-left:6px solid var(--c)}
+  .award .a div{margin-bottom:6px;font-weight:700}
+  .award .a button{padding:6px 12px;margin-right:6px}
+  .setup{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+  .setup input{font:inherit;padding:12px 14px;border-radius:10px;border:2px solid var(--panel2);background:var(--bg);color:var(--text);width:100%}
+  .setup input:focus{outline:0;border-color:var(--gold)}
+  .podium{display:flex;flex-direction:column;gap:10px}
+  .pod{display:flex;align-items:center;gap:14px;background:var(--panel2);border-radius:12px;padding:14px 18px;border-left:8px solid var(--c);font-size:1.3rem}
+  .pod .s{margin-left:auto;font-weight:800}
+  .pod.first{font-size:1.9rem;background:#3a3320;outline:2px solid var(--gold)}
+  .big{font-size:clamp(2rem,5vw,3.4rem);font-weight:800;text-align:center}
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:9}
+  footer{padding:8px 24px;color:var(--muted);font-size:.8rem;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>Game<span>Dev</span>Utopia &middot; Showdown</h1>
+  <nav id="nav"></nav>
+</header>
+<main>
+  <div class="scoreboard" id="board"></div>
+  <section class="stage" id="stage"></section>
+</main>
+<footer>Keys: <b>1-6</b> buzz your team &middot; <b>A-D</b> answer &middot; <b>Space</b> next / spin &middot; scores save automatically</footer>
+<canvas id="confetti"></canvas>
+
+<script>
+/* ---------- content ---------- */
+const QUESTIONS = [
+  {c:"GDU Lore", q:"In which year was GameDevUtopia founded at PICT Pune?", o:["2018","2019","2020","2021"], a:2,
+   e:"GDU started in 2020 - founded by three students who had NO prior game dev experience. You can start from zero too!"},
+  {c:"Game Dev Basics", q:"What is a game jam?", o:["A lag spike during multiplayer","Making a game from scratch in a short time around a theme","A game launch party","A server crash"], a:1,
+   e:"Jams are the fastest way to learn: a theme, a deadline (24-72 hrs usually), and a playable game at the end."},
+  {c:"GDU Lore", q:"What is the name of GDU PICT's annual multi-day festival?", o:["GameVita","Retropolis","Glitched","Apoorv"], a:2,
+   e:"Glitched: game jams, art jams, esports, Grand Expo and a Speakers Series. GameVita is IIIT Kottayam's game jam."},
+  {c:"Tools", q:"Which language is the main scripting language of the Unity engine?", o:["Python","C#","Lua","GDScript"], a:1,
+   e:"Unity = C#. Unreal uses C++ and Blueprints, Godot uses GDScript, Love2D/Defold use Lua."},
+  {c:"Game Dev Basics", q:"The 'game loop' keeps repeating which three steps?", o:["Download, Install, Play","Plan, Pay, Publish","Input, Update, Render","Menu, Level, Credits"], a:2,
+   e:"Read player input, update the game world, draw it on screen - dozens of times every second."},
+  {c:"Tools", q:"Which FREE, open-source tool is used for 3D modelling and animation?", o:["DaVinci Resolve","Blender","Aseprite","Photoshop"], a:1,
+   e:"Blender! DaVinci Resolve is for video editing, Aseprite is for pixel art, Photoshop is paid 2D art."},
+  {c:"GDU Lore", q:"GameVita is the annual game jam of which GDU chapter?", o:["PICT Pune","IIIT Kottayam","IIT Madras","COEP"], a:1,
+   e:"GameVita runs during Apoorv, IIITK's flagship tech fest - designed, organised and judged by the club."},
+  {c:"Game Dev Basics", q:"What is a 'hitbox'?", o:["A loot crate","The invisible shape used to detect hits and collisions","A health bar","A cheat code menu"], a:1,
+   e:"What you SEE and what the game CHECKS are different things. Good hitboxes make a game feel fair."},
+  {c:"Tools", q:"GDScript is the Python-like language of which engine?", o:["Unity","Unreal Engine","Godot","Roblox"], a:2,
+   e:"Godot: free, open-source and beginner friendly - a favourite for game jams."},
+  {c:"Game Dev Basics", q:"A game running at 60 FPS must draw a new frame roughly every...", o:["1 second","100 ms","16 ms","160 ms"], a:2,
+   e:"1000 ms / 60 = about 16.7 ms. That's the entire time budget for input, logic AND drawing."},
+  {c:"GDU Lore", q:"Defold, GDU's international sponsor, is used by which studio (makers of Candy Crush)?", o:["Ubisoft","Rockstar","King","Mojang"], a:2,
+   e:"Defold is used by King, and GDU has run international Defold game jams with it."},
+  {c:"Game Dev Basics", q:"Why do developers multiply movement by 'delta time'?", o:["To make games harder","So speed stays the same on fast and slow computers","To save memory","To add screen shake"], a:1,
+   e:"Without it, a character on a 144 Hz laptop would run more than twice as fast as on a 60 Hz one."},
+  {c:"Tools", q:"Love2D games are written in which language?", o:["Lua","Java","Rust","Swift"], a:0,
+   e:"Lua is tiny and easy to learn. GDU PICT x IIITK even ran an 8-day Love2D + Lua workshop."},
+  {c:"Game Dev Basics", q:"What does 'procedural generation' do?", o:["Writes the game's story by hand","Creates levels/maps automatically using algorithms","Compresses textures","Fixes bugs automatically"], a:1,
+   e:"Minecraft worlds and roguelike dungeons are generated by code - infinite replayability from a few rules."},
+  {c:"Tools", q:"What is Unreal Engine's visual scripting system called?", o:["Blueprints","Nodes+","Schematics","Flowgraph"], a:0,
+   e:"Blueprints let you build gameplay by connecting nodes - no typing code required."},
+  {c:"Game Dev Basics", q:"What is 'playtesting'?", o:["Testing your PC's graphics card","Watching real people play your game to find problems","Writing unit tests","Playing the game only yourself"], a:1,
+   e:"You're blind to your own game. Watch a stranger play in silence - you'll learn more in 5 minutes than in 5 hours of coding."}
+];
+const GENRES  = ["Platformer","Horror","Puzzle","Racing","Farming sim","Tower defense","Roguelike","Rhythm game","Space shooter","Cooking game","Visual novel","Battle royale"];
+const MECHS   = ["Gravity flips","Time rewind","Only ONE button","Grappling hook","Shrink and grow","Control two characters","Walls are mirrors","Dice decide everything","Swap places with enemies","Everything is a clone of you"];
+const TWISTS  = ["Set in the college canteen","The hero is a cat","Boss is the Wi-Fi router","Enemy is your professor","Only works at night","Set during exam week","Co-op only","Music controls the world","No text allowed","Set inside a bus to PICT"];
+const COLORS = ["--t0","--t1","--t2","--t3","--t4","--t5"];
+const QTIME = 25, RTIME = 60;
+
+/* ---------- state ---------- */
+let S = load() || {mode:"setup", teams:[], qi:0, round:0};
+let Q = {phase:"open", buzzed:null, locked:[], left:QTIME, pick:null};
+let R = {spinning:false, items:null, left:RTIME, running:false, awarded:{}};
+let muted = false, tick = null;
+
+function load(){ try{ return JSON.parse(localStorage.getItem("gduShowdown")); }catch(e){ return null; } }
+function save(){ try{ localStorage.setItem("gduShowdown", JSON.stringify(S)); }catch(e){} }
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const rnd = a => a[Math.floor(Math.random()*a.length)];
+
+/* ---------- sound ---------- */
+let actx;
+function beep(freq, dur=.15, type="square", vol=.12, delay=0){
+  if(muted) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = freq; g.gain.value = vol;
+    o.connect(g); g.connect(actx.destination);
+    const t = actx.currentTime + delay;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
+    o.start(t); o.stop(t+dur);
+  }catch(e){}
+}
+const sfx = {
+  buzz:()=>beep(520,.2,"sawtooth"),
+  good:()=>{beep(660,.12,"square",.12,0);beep(880,.12,"square",.12,.1);beep(1175,.2,"square",.12,.2)},
+  bad:()=>{beep(220,.25,"sawtooth",.14,0);beep(150,.35,"sawtooth",.14,.2)},
+  tick:()=>beep(900,.05,"square",.06),
+  spin:()=>beep(400+Math.random()*400,.04,"square",.05)
+};
+
+/* ---------- chrome: nav + scoreboard ---------- */
+function renderNav(){
+  const items = [["quiz","Round 1: Quiz"],["roulette","Round 2: Jam Roulette"],["end","Finish"]];
+  $("nav").innerHTML = S.mode==="setup" ? "" :
+    items.map(([m,t])=>`<button data-m="${m}" class="${S.mode===m?"on":""}">${t}</button>`).join("") +
+    `<button id="mute">${muted?"Sound off":"Sound on"}</button>`;
+  $("nav").querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>go(b.dataset.m));
+  const m = $("mute"); if(m) m.onclick=()=>{muted=!muted;renderNav()};
+}
+function renderBoard(){
+  $("board").innerHTML = S.teams.map((t,i)=>{
+    const quiz = S.mode==="quiz" && Q.phase!=="revealed";
+    const cls = (quiz && Q.buzzed===i?" buzzed":"") + (quiz && Q.locked.includes(i)?" locked":"");
+    return `<button class="team${cls}" data-i="${i}" style="--c:var(${COLORS[i]})">
+      <span class="k">key ${i+1}</span><div class="n">${esc(t.name)}</div><div class="s">${t.score}</div></button>`;
+  }).join("");
+  $("board").querySelectorAll(".team").forEach(b=>b.onclick=()=>buzz(+b.dataset.i));
+}
+function go(mode){
+  clearInterval(tick); S.mode = mode; save();
+  if(mode==="quiz") startQuestion();
+  else if(mode==="roulette") renderRoulette();
+  else renderEnd();
+  renderNav(); renderBoard();
+}
+
+/* ---------- setup ---------- */
+function renderSetup(){
+  $("stage").innerHTML = `<div class="setup">
+    <div class="big">Name your teams</div>
+    <div class="hint" style="text-align:center">2 to 6 teams. Leave a name blank to skip that slot.</div>
+    ${Array.from({length:6},(_,i)=>`<input id="tn${i}" maxlength="18" placeholder="Team ${i+1}" value="${esc(S.teams[i]?S.teams[i].name:"")}">`).join("")}
+    <button class="primary" id="go" style="font-size:1.2rem">Start the Showdown</button>
+  </div>`;
+  $("go").onclick = ()=>{
+    const names = [...Array(6).keys()].map(i=>$("tn"+i).value.trim()).filter(Boolean);
+    if(names.length<2){ alert("Enter at least 2 team names."); return; }
+    S.teams = names.map(name=>({name, score:0})); S.qi = 0; S.mode = "quiz"; save();
+    go("quiz");
+  };
+}
+
+/* ---------- quiz round ---------- */
+function startQuestion(){
+  clearInterval(tick);
+  Q = {phase:"open", buzzed:null, locked:[], left:QTIME, pick:null};
+  renderQuiz();
+  tick = setInterval(()=>{
+    if(Q.phase!=="open") return;               // paused while a team is answering
+    Q.left = Math.max(0, +(Q.left-.1).toFixed(1));
+    if(Math.abs(Q.left-Math.round(Q.left))<.05 && Q.left<=5 && Q.left>0) sfx.tick();
+    updateTimer();
+    if(Q.left<=0) reveal();
+  },100);
+}
+function renderQuiz(){
+  if(S.qi>=QUESTIONS.length){ go("roulette"); return; }
+  const q = QUESTIONS[S.qi], L = "ABCD";
+  const revealed = Q.phase==="revealed";
+  const who = Q.buzzed!==null ? S.teams[Q.buzzed].name : "";
+  let banner;
+  if(revealed) banner = Q.pick===q.a && Q.buzzed!==null ? `Correct! +10 for ${esc(who)}` : "Answer revealed";
+  else if(Q.phase==="answering") banner = `${esc(who)} buzzed in - pick an answer!`;
+  else banner = Q.locked.length ? "Wrong! Other teams - BUZZ to steal!" : "Teams: first to buzz gets to answer";
+  $("stage").innerHTML = `
+    <div class="row"><span class="chip">${esc(q.c)}</span><span class="hint">Question ${S.qi+1} / ${QUESTIONS.length} &middot; +10 right, -5 wrong</span>
+      <span class="spacer"></span><button id="skipq">Skip</button></div>
+    <div class="timer" id="timer"><i></i></div>
+    <div class="q">${esc(q.q)}</div>
+    <div class="banner" style="color:var(--gold)">${banner}</div>
+    <div class="opts">${q.o.map((t,i)=>{
+      let cls = ""; if(revealed){ cls = i===q.a?" right":(Q.wrongPicks&&Q.wrongPicks.includes(i)?" wrong":""); }
+      return `<button class="opt${cls}" data-i="${i}" ${Q.phase==="answering"&&!Q.wrongPicks?.includes(i)?"":"disabled"}><b>${L[i]}</b>${esc(t)}</button>`;
+    }).join("")}</div>
+    ${revealed ? `<div class="explain"><b>Learn:</b> ${esc(q.e)}</div>
+      <div class="row"><span class="spacer"></span><button class="primary" id="next">${S.qi+1<QUESTIONS.length?"Next question":"On to Jam Roulette"} &rarr;</button></div>` : ""}`;
+  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+  $("skipq").onclick = ()=>reveal();
+  if($("next")) $("next").onclick = nextQ;
+  updateTimer(); renderBoard();
+}
+function updateTimer(){
+  const t = $("timer"); if(!t) return;
+  t.firstElementChild.style.width = (Q.left/QTIME*100)+"%";
+  t.classList.toggle("low", Q.left<=5);
+}
+function buzz(i){
+  if(S.mode!=="quiz" || Q.phase!=="open" || Q.locked.includes(i)) return;
+  Q.phase = "answering"; Q.buzzed = i; sfx.buzz(); renderQuiz();
+}
+function answer(i){
+  if(Q.phase!=="answering") return;
+  const q = QUESTIONS[S.qi], t = S.teams[Q.buzzed];
+  Q.pick = i;
+  if(i===q.a){ t.score += 10; sfx.good(); reveal(true); }
+  else{
+    t.score -= 5; sfx.bad();
+    (Q.wrongPicks = Q.wrongPicks||[]).push(i);
+    Q.locked.push(Q.buzzed); Q.buzzed = null; Q.phase = "open";
+    save();
+    if(Q.locked.length>=S.teams.length) reveal(); else renderQuiz();
+  }
+}
+function reveal(solved){
+  if(Q.phase==="revealed") return;
+  if(!solved) Q.pick = null;
+  Q.phase = "revealed"; save(); renderQuiz();
+}
+function nextQ(){ S.qi++; save(); if(S.qi>=QUESTIONS.length) go("roulette"); else startQuestion(); }
+
+/* ---------- jam roulette ---------- */
+function renderRoulette(){
+  clearInterval(tick);
+  const labels = ["GENRE","MECHANIC","TWIST"];
+  const it = R.items || ["?","?","?"];
+  $("stage").innerHTML = `
+    <div class="row"><span class="chip">Round 2</span><span class="hint">Spin, plan in your team, then pitch your game to the room</span></div>
+    <div class="reels">${it.map((t,i)=>`<div class="reel ${R.spinning?"spin":""}"><small>${labels[i]}</small><div>${esc(t)}</div></div>`).join("")}</div>
+    <div class="banner" style="color:var(--gold)">Pitch: game title + one-line hook + what the player does</div>
+    <div class="timer ${R.left<=10?"low":""}" id="rtimer"><i style="width:${R.left/RTIME*100}%"></i></div>
+    <div class="row">
+      <button class="primary" id="spin" ${R.spinning?"disabled":""}>${R.items?"Spin again":"Spin!"}</button>
+      <button id="rstart" ${!R.items||R.spinning?"disabled":""}>${R.running?"Pause":"Start "+RTIME+"s timer"}</button>
+      <span class="hint" id="rleft">${Math.ceil(R.left)}s</span>
+    </div>
+    ${R.items && !R.spinning ? `<div class="hint">Award points after each pitch (judged by the room / mentors):</div>
+    <div class="award">${S.teams.map((t,i)=>`<div class="a" style="--c:var(${COLORS[i]})"><div>${esc(t.name)}</div>
+      ${R.awarded[i]!==undefined ? `<span class="chip">+${R.awarded[i]} awarded</span>` :
+        [3,5,10].map(p=>`<button data-t="${i}" data-p="${p}">+${p}</button>`).join("")}</div>`).join("")}</div>` : ""}
+    <div class="row"><span class="spacer"></span><button id="tofinish" class="primary">Finish &amp; see winners</button></div>`;
+  $("spin").onclick = spin;
+  $("rstart").onclick = toggleRTimer;
+  $("tofinish").onclick = ()=>go("end");
+  document.querySelectorAll(".award button").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.t, p=+b.dataset.p; S.teams[i].score+=p; R.awarded[i]=p; save(); sfx.good(); renderRoulette(); renderBoard();
+  });
+  renderBoard();
+}
+function spin(){
+  if(R.spinning) return;
+  clearInterval(tick);
+  R = {spinning:true, items:["...","...","..."], left:RTIME, running:false, awarded:{}};
+  const finals = [rnd(GENRES), rnd(MECHS), rnd(TWISTS)], pools = [GENRES,MECHS,TWISTS];
+  const stopAt = [900,1700,2500], t0 = Date.now();
+  renderRoulette();
+  const iv = setInterval(()=>{
+    const el = Date.now()-t0;
+    const cells = document.querySelectorAll(".reel div");
+    for(let i=0;i<3;i++) if(cells[i]){
+      R.items[i] = el>=stopAt[i] ? finals[i] : rnd(pools[i]);
+      cells[i].textContent = R.items[i];
+    }
+    sfx.spin();
+    if(el>=stopAt[2]){ clearInterval(iv); R.spinning=false; R.items=finals; sfx.good(); renderRoulette(); }
+  },90);
+}
+function toggleRTimer(){
+  if(R.running){ R.running=false; clearInterval(tick); renderRoulette(); return; }
+  if(R.left<=0) R.left = RTIME;
+  R.running = true; renderRoulette();
+  tick = setInterval(()=>{
+    R.left = Math.max(0, +(R.left-.1).toFixed(1));
+    const t = $("rtimer"), l = $("rleft");
+    if(t){ t.firstElementChild.style.width=(R.left/RTIME*100)+"%"; t.classList.toggle("low",R.left<=10); }
+    if(l) l.textContent = Math.ceil(R.left)+"s";
+    if(R.left<=0){ clearInterval(tick); R.running=false; sfx.bad(); renderRoulette(); }
+  },100);
+}
+
+/* ---------- finish ---------- */
+function renderEnd(){
+  clearInterval(tick);
+  const order = S.teams.map((t,i)=>({...t,i})).sort((a,b)=>b.score-a.score);
+  $("stage").innerHTML = `<div class="big">Winner: ${esc(order[0].name)}!</div>
+    <div class="podium">${order.map((t,r)=>`<div class="pod ${r===0?"first":""}" style="--c:var(${COLORS[t.i]})">
+      <span>${["1st","2nd","3rd"][r]||(r+1)+"th"}</span><span>${esc(t.name)}</span><span class="s">${t.score}</span></div>`).join("")}</div>
+    <div class="explain" style="border-color:var(--gold)"><b>Want to build games like these?</b> GDU runs workshops, game jams and mentoring from industry pros -
+      from Unity and Godot to Blender, Love2D and more. Come talk to us after this!</div>
+    <div class="row"><button id="again">New game (reset scores)</button></div>`;
+  $("again").onclick = ()=>{ if(confirm("Reset everything?")){ S={mode:"setup",teams:S.teams.map(t=>({name:t.name,score:0})),qi:0}; R={spinning:false,items:null,left:RTIME,running:false,awarded:{}}; save(); boot(); } };
+  confetti(); renderBoard();
+}
+function confetti(){
+  const c = $("confetti"), x = c.getContext("2d");
+  c.width = innerWidth; c.height = innerHeight;
+  const ps = Array.from({length:180},()=>({x:Math.random()*c.width,y:-Math.random()*c.height,v:2+Math.random()*4,s:5+Math.random()*7,
+    col:["#d4af4f","#ff6b6b","#4dabf7","#51cf66","#cc5de8"][Math.floor(Math.random()*5)],r:Math.random()*6}));
+  let f = 0;
+  (function draw(){
+    x.clearRect(0,0,c.width,c.height);
+    ps.forEach(p=>{p.y+=p.v;p.r+=.1;x.fillStyle=p.col;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);x.restore()});
+    if(++f<420) requestAnimationFrame(draw); else x.clearRect(0,0,c.width,c.height);
+  })();
+}
+
+/* ---------- keyboard ---------- */
+addEventListener("keydown", e=>{
+  if(/INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  const k = e.key.toLowerCase();
+  if(S.mode==="quiz"){
+    if(/^[1-6]$/.test(k) && +k<=S.teams.length) buzz(+k-1);
+    else if("abcd".includes(k) && k.length===1) answer("abcd".indexOf(k));
+    else if(k===" "||k==="enter"){ e.preventDefault(); if(Q.phase==="revealed") nextQ(); }
+  }else if(S.mode==="roulette" && k===" "){ e.preventDefault(); spin(); }
+});
+
+/* ---------- boot ---------- */
+function boot(){
+  if(S.mode==="setup" || !S.teams.length){ S.mode="setup"; renderNav(); renderBoard(); renderSetup(); }
+  else go(S.mode);
+}
+boot();
+</script>
+</body>
+</html>
